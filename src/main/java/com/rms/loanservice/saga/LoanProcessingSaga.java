@@ -6,10 +6,7 @@ import com.rms.loanservice.akka.LoanVerificationCoordinatorActor;
 import com.rms.loanservice.akka.LoanVerificationMessages;
 import com.rms.loanservice.command.ApproveLoanCommand;
 import com.rms.loanservice.command.StartLoanVerificationCommand;
-import com.rms.loanservice.event.LoanApplicationSubmittedEvent;
-import com.rms.loanservice.event.LoanApprovedEvent;
-import com.rms.loanservice.event.LoanVerificationStartedEvent;
-import com.rms.loanservice.event.LoanVerifiedEvent;
+import com.rms.loanservice.event.*;
 import com.rms.loanservice.gateway.LoanEventPublisher;
 import lombok.extern.slf4j.Slf4j;
 import org.axonframework.commandhandling.gateway.CommandGateway;
@@ -64,6 +61,12 @@ public class LoanProcessingSaga {
     @SagaEventHandler(associationProperty = "applicationId")
     public void on(LoanApprovedEvent event) {
         log.info("Saga Completed. Loan approved for applicationId {} ", event.getApplicationId());
+        SagaLifecycle.end();
+    }
+
+    @SagaEventHandler(associationProperty = "applicationId")
+    public void on(LoanRejectedEvent event) {
+        log.info("Saga Ended Loan Rejected for applicationId {} - Reason: {}", event.getApplicationId(),event.getReason());
         SagaLifecycle.end();
     }
 }

@@ -5,6 +5,7 @@ import com.rms.loanservice.command.StartLoanVerificationCommand;
 import com.rms.loanservice.command.SubmitLoanApplicationCommand;
 import com.rms.loanservice.event.LoanApplicationSubmittedEvent;
 import com.rms.loanservice.event.LoanApprovedEvent;
+import com.rms.loanservice.event.LoanRejectedEvent;
 import com.rms.loanservice.event.LoanVerificationStartedEvent;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -64,6 +65,12 @@ public class LoanAggregate {
     public void on(LoanApprovedEvent event) {
         log.info("Event: Approved loan for id: {}", event.getApplicationId());
         status = "Approved";
+    }
+
+    @EventSourcingHandler
+    public void on(LoanRejectedEvent event) {
+        log.info("Event: Rejected loan for id: {}", event.getApplicationId());
+        status = "Rejected";
     }
 
 

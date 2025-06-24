@@ -36,7 +36,7 @@ public class LoanVerificationCoordinatorActor extends AbstractBehavior<LoanVerif
 
     private Behavior<LoanVerificationMessages.CoordinatorCommand> onStart(LoanVerificationMessages.StartVerification command) {
         this.applicationId = command.applicationId ;
-        kycActor = getContext().spawn(KycActor.create(getContext().getSelf()), "KycActor-" + applicationId) ;
+        kycActor = getContext().spawn(KycActor.create(getContext().getSelf(), publisher), "KycActor-" + applicationId) ;
         docActor = getContext().spawn(DocActor.create(getContext().getSelf()), "DocActor-" + applicationId) ;
 
         kycActor.tell(applicationId);

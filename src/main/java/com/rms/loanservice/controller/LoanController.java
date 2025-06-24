@@ -1,6 +1,7 @@
 package com.rms.loanservice.controller;
 
 import com.rms.loanservice.command.SubmitLoanApplicationCommand;
+import com.rms.loanservice.dto.SubmitLoanDto;
 import lombok.RequiredArgsConstructor;
 import org.axonframework.commandhandling.gateway.CommandGateway;
 import org.springframework.web.bind.annotation.*;
@@ -18,10 +19,9 @@ public class LoanController {
         return "test";
     }
     @PostMapping
-    public String submitLoan(@RequestParam String customerName, @RequestParam double amount) {
-        String applicationId = UUID.randomUUID().toString();
-        var submitLoanCommand = new SubmitLoanApplicationCommand(applicationId, customerName, amount);
+    public String submitLoan(@RequestBody SubmitLoanDto submitLoanDto) {
+        var submitLoanCommand = new SubmitLoanApplicationCommand(submitLoanDto.getApplicationId(), submitLoanDto.getCustomerName(), submitLoanDto.getAmount());
         commandGateway.send(submitLoanCommand);
-        return "Loan application submitted with id " + applicationId;
+        return "Loan application submitted with id " + submitLoanDto.getApplicationId();
     }
 }
