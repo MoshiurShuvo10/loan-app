@@ -1,11 +1,13 @@
 package com.rms.loanservice.saga;
 
+import akka.actor.typed.ActorRef;
+import akka.actor.typed.Props;
+import com.rms.loanservice.akka.LoanVerificationCoordinatorActor;
+import com.rms.loanservice.akka.LoanVerificationMessages;
 import com.rms.loanservice.command.StartLoanVerificationCommand;
 import com.rms.loanservice.event.LoanApplicationSubmittedEvent;
 import com.rms.loanservice.event.LoanVerificationStartedEvent;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
+import com.rms.loanservice.gateway.LoanEventPublisher;
 import lombok.extern.slf4j.Slf4j;
 import org.axonframework.commandhandling.gateway.CommandGateway;
 import org.axonframework.modelling.saga.SagaEventHandler;
@@ -22,6 +24,11 @@ public class LoanProcessingSaga {
     @Autowired
     private transient CommandGateway commandGateway;
 
+    @Autowired
+    private transient akka.actor.typed.ActorSystem<Void> typedActorSystem;
+    @Autowired
+    private LoanEventPublisher loanEventPublisher;
+
     public LoanProcessingSaga() {}
 
     @StartSaga
@@ -34,6 +41,13 @@ public class LoanProcessingSaga {
 
     @SagaEventHandler(associationProperty = "applicationId")
     public void on(LoanVerificationStartedEvent loanVerificationStartedEvent) {
-        log.info("loan verification started for applicationId: " + loanVerificationStartedEvent.getApplicationId());
+        log.info("Triggering typed Akka verification for app: {} ", loanVerificationStartedEvent.getApplicationId());
+        ActorRef<LoanVerificationMessages.CoordinatorCommand> coordinator =
+                typedActorSystem.systemActorOf(
+                        LoanVerificationCoordinatorActor.create(loanEventPublisher),
+                        "Coordinator-"+loanVerificationStartedEvent.getApplicationId(),
+                        Props.empty()
+                ) ;
+        coordinator.tell(new LoanVerificationMessages.StartVerification(loanVerificationStartedEvent.getApplicationId()));
     }
 }

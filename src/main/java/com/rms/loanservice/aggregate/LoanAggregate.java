@@ -25,14 +25,13 @@ public class LoanAggregate {
 
     @CommandHandler
     public LoanAggregate(SubmitLoanApplicationCommand command) {
-        log.info("Handling command: {}", command);
-        log.info("id: {}", command.getApplicationId());
+        log.info("Command: Submit Loan application with id {} , customer name {}, amount {}", command.getApplicationId(), command.getCustomerName(), command.getAmount());
         apply(new LoanApplicationSubmittedEvent(command.getApplicationId(), command.getCustomerName(),command.getAmount())) ;
     }
 
     @EventSourcingHandler
     public void on(LoanApplicationSubmittedEvent event) {
-        log.info("Handling event: " + event);
+        log.info("Event: Submitted Loan application with id {} , customer name {}, amount {}", event.getApplicationId(), event.getCustomerName(), event.getAmount());
         this.applicationId = event.getApplicationId();
         this.customerName = event.getCustomerName();
         this.amount = event.getAmount();
@@ -41,13 +40,13 @@ public class LoanAggregate {
 
     @CommandHandler
     public void handle(StartLoanVerificationCommand command) {
-        log.info("Starting loan verification for id: {}", command.getApplicationId());
+        log.info("Command: Start loan verification for id: {}", command.getApplicationId());
         apply(new LoanVerificationStartedEvent(command.getApplicationId())) ;
     }
 
     @EventSourcingHandler
     public void on(LoanVerificationStartedEvent event) {
-        log.info("Started loan verification for id: {}", event.getApplicationId());
+        log.info("Event: Started loan verification for id: {}", event.getApplicationId());
         this.status = "Verification_Started";
     }
 

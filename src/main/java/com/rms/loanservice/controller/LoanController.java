@@ -20,7 +20,6 @@ public class LoanController {
     @PostMapping
     public String submitLoan(@RequestParam String customerName, @RequestParam double amount) {
         String applicationId = UUID.randomUUID().toString();
-        System.out.println("Application Id: " + applicationId);
         var submitLoanCommand = new SubmitLoanApplicationCommand(applicationId, customerName, amount);
         commandGateway.send(submitLoanCommand);
         return "Loan application submitted with id " + applicationId;
