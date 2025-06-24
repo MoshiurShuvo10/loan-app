@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: loan-service
+server:
+  port: 8080
+axon:
+  axonserver:
+    enabled: true
+    servers: localhost:8124
