@@ -4,13 +4,17 @@ import akka.actor.typed.ActorRef;
 import akka.actor.typed.Props;
 import com.rms.loanservice.akka.LoanVerificationCoordinatorActor;
 import com.rms.loanservice.akka.LoanVerificationMessages;
+import com.rms.loanservice.command.ApproveLoanCommand;
 import com.rms.loanservice.command.StartLoanVerificationCommand;
 import com.rms.loanservice.event.LoanApplicationSubmittedEvent;
+import com.rms.loanservice.event.LoanApprovedEvent;
 import com.rms.loanservice.event.LoanVerificationStartedEvent;
+import com.rms.loanservice.event.LoanVerifiedEvent;
 import com.rms.loanservice.gateway.LoanEventPublisher;
 import lombok.extern.slf4j.Slf4j;
 import org.axonframework.commandhandling.gateway.CommandGateway;
 import org.axonframework.modelling.saga.SagaEventHandler;
+import org.axonframework.modelling.saga.SagaLifecycle;
 import org.axonframework.modelling.saga.StartSaga;
 import org.axonframework.spring.stereotype.Saga;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,7 +45,7 @@ public class LoanProcessingSaga {
 
     @SagaEventHandler(associationProperty = "applicationId")
     public void on(LoanVerificationStartedEvent loanVerificationStartedEvent) {
-        log.info("Triggering typed Akka verification for app: {} ", loanVerificationStartedEvent.getApplicationId());
+        log.info("Saga: Triggering typed Akka verification for app: {} ", loanVerificationStartedEvent.getApplicationId());
         ActorRef<LoanVerificationMessages.CoordinatorCommand> coordinator =
                 typedActorSystem.systemActorOf(
                         LoanVerificationCoordinatorActor.create(loanEventPublisher),
@@ -49,5 +53,17 @@ public class LoanProcessingSaga {
                         Props.empty()
                 ) ;
         coordinator.tell(new LoanVerificationMessages.StartVerification(loanVerificationStartedEvent.getApplicationId()));
+    }
+
+    @SagaEventHandler(associationProperty = "applicationId")
+    public void on(LoanVerifiedEvent event) {
+        log.info("Saga: Loan request verified. Sending approval command for applicationId {} ", event.getApplicationId());
+        commandGateway.send(new ApproveLoanCommand(event.getApplicationId()));
+    }
+
+    @SagaEventHandler(associationProperty = "applicationId")
+    public void on(LoanApprovedEvent event) {
+        log.info("Saga Completed. Loan approved for applicationId {} ", event.getApplicationId());
+        SagaLifecycle.end();
     }
 }

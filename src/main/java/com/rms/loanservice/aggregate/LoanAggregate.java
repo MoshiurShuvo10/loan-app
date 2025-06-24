@@ -1,8 +1,10 @@
 package com.rms.loanservice.aggregate;
 
+import com.rms.loanservice.command.ApproveLoanCommand;
 import com.rms.loanservice.command.StartLoanVerificationCommand;
 import com.rms.loanservice.command.SubmitLoanApplicationCommand;
 import com.rms.loanservice.event.LoanApplicationSubmittedEvent;
+import com.rms.loanservice.event.LoanApprovedEvent;
 import com.rms.loanservice.event.LoanVerificationStartedEvent;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,7 +33,7 @@ public class LoanAggregate {
 
     @EventSourcingHandler
     public void on(LoanApplicationSubmittedEvent event) {
-        log.info("Event: Submitted Loan application with id {} , customer name {}, amount {}", event.getApplicationId(), event.getCustomerName(), event.getAmount());
+        log.info("EventSource: Submitted Loan application with id {} , customer name {}, amount {}", event.getApplicationId(), event.getCustomerName(), event.getAmount());
         this.applicationId = event.getApplicationId();
         this.customerName = event.getCustomerName();
         this.amount = event.getAmount();
@@ -46,8 +48,22 @@ public class LoanAggregate {
 
     @EventSourcingHandler
     public void on(LoanVerificationStartedEvent event) {
-        log.info("Event: Started loan verification for id: {}", event.getApplicationId());
+        log.info("EventSource: Started loan verification for id: {}", event.getApplicationId());
         this.status = "Verification_Started";
+    }
+
+    @CommandHandler
+    public void handle(ApproveLoanCommand command) {
+        if(!"verification_started".equalsIgnoreCase(status)) {
+            throw new IllegalStateException("Can not approve loan before verification.");
+        }
+        apply(new LoanApprovedEvent(command.getApplicationId())) ;
+    }
+
+    @EventSourcingHandler
+    public void on(LoanApprovedEvent event) {
+        log.info("Event: Approved loan for id: {}", event.getApplicationId());
+        status = "Approved";
     }
 
 
