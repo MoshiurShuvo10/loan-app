@@ -1,7 +1,9 @@
 package com.rms.loanservice.aggregate;
 
+import com.rms.loanservice.command.StartLoanVerificationCommand;
 import com.rms.loanservice.command.SubmitLoanApplicationCommand;
 import com.rms.loanservice.event.LoanApplicationSubmittedEvent;
+import com.rms.loanservice.event.LoanVerificationStartedEvent;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.axonframework.commandhandling.CommandHandler;
@@ -36,5 +38,35 @@ public class LoanAggregate {
         this.amount = event.getAmount();
         this.status = "Submitted";
     }
+
+    @CommandHandler
+    public void handle(StartLoanVerificationCommand command) {
+        log.info("Starting loan verification for id: {}", command.getApplicationId());
+        apply(new LoanVerificationStartedEvent(command.getApplicationId())) ;
+    }
+
+    @EventSourcingHandler
+    public void on(LoanVerificationStartedEvent event) {
+        log.info("Started loan verification for id: {}", event.getApplicationId());
+        this.status = "Verification_Started";
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 }
