@@ -1,9 +1,15 @@
 spring:
   application:
     name: loan-service
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+      database: order_read_db
 server:
   port: 8080
 axon:
   axonserver:
     enabled: true
     servers: localhost:8124
+
