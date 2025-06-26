@@ -1,11 +1,20 @@
 spring:
   application:
     name: loan-service
+  datasource:
+    url: jdbc:mysql://localhost:3308/loan-service
+    username: root
+    password: password
+    driver-class-name: com.mysql.cj.jdbc.Driver
   data:
     mongodb:
       host: localhost
       port: 27017
       database: order_read_db
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
 server:
   port: 8080
 axon:
